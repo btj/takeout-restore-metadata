@@ -116,13 +116,6 @@ foreach my $json_file (@json_files) {
     # Update EXIF using Image::ExifTool (Perl API)
     require Image::ExifTool;
     my $et = Image::ExifTool->new;
-    $et->SetNewValue('AllDates', $formatted_time);
-    my $wrote = $et->WriteInfo($media_file);
-    unless ($wrote) {
-        my $err = $et->GetValue('Error') || $et->GetValue('Warning') || 'unknown error';
-        warn "Image::ExifTool write failed for '$media_file': $err\n";
-    }
-    print "Updated EXIF AllDates to '$formatted_time' for '$media_file'.\n";
 
     # Set the EXIF geo data. Use geoData if available, otherwise geoDataExif. If either is all zeroes, consider it unavailable.
     my $geo = $data->{geoData};
@@ -131,14 +124,21 @@ foreach my $json_file (@json_files) {
         $et->SetNewValue('GPSLatitude', $geo->{latitude});
         $et->SetNewValue('GPSLongitude', $geo->{longitude});
         $et->SetNewValue('GPSAltitude', $geo->{altitude});
-        $et->WriteInfo($media_file);
-        print "Updated EXIF GPS data from geoData for '$media_file'.\n";
+        print "Updating EXIF GPS data from geoData for '$media_file'...\n";
     } elsif (defined $geo_exif && !($geo_exif->{latitude} == 0 && $geo_exif->{longitude} == 0)) {
         $et->SetNewValue('GPSLatitude', $geo_exif->{latitude});
         $et->SetNewValue('GPSLongitude', $geo_exif->{longitude});
         $et->SetNewValue('GPSAltitude', $geo_exif->{altitude});
-        $et->WriteInfo($media_file);
-        print "Updated EXIF GPS data from geoDataExif for '$media_file'.\n";
+        print "Updating EXIF GPS data from geoDataExif for '$media_file'...\n";
     }
+
+    $et->SetNewValue('AllDates', $formatted_time);
+    $et->SetNewValue(FileModifyDate => $formatted_time, Protected => 1);
+    my $wrote = $et->WriteInfo($media_file);
+    unless ($wrote) {
+        my $err = $et->GetValue('Error') || $et->GetValue('Warning') || 'unknown error';
+        warn "Image::ExifTool write failed for '$media_file': $err\n";
+    }
+    print "Updated EXIF AllDates to '$formatted_time' for '$media_file'.\n";
 
 }
