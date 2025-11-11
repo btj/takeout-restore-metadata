@@ -72,7 +72,7 @@ my @json_files = glob("*.json");
 # For each of these .json files, parse the file and retrieve the photoTakenTime.timestamp value.
 # Also retrieve the media file's modification time from the filesystem.
 # If the file's modification time is within 1 day of the photoTakenTime.timestamp, skip the file. (It has already been processed.)
-use JSON;
+use JSON::PP qw(encode_json decode_json);
 use File::stat;
 use Time::Local;
 use POSIX qw(strftime);
