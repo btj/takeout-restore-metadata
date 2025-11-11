@@ -90,6 +90,17 @@ foreach my $json_file (@json_files) {
 
     my $photo_taken_timestamp = $data->{photoTakenTime}->{timestamp};
     my $media_file = $data->{title};
+
+    # If $media_file is of the form X.HEIC, and X.HEIC does not exist, target X.jpg instead.
+    if ($media_file =~ /\.HEIC$/i) {
+        my $jpg_file = $media_file;
+        $jpg_file =~ s/\.HEIC$/.JPG/i;
+        if (!-e $media_file && -e $jpg_file) {
+            print "Targeting '$jpg_file' instead of missing '$media_file'.\n";
+            $media_file = $jpg_file;
+        }
+    }
+
     my $file_stat = stat($media_file);
     unless ($file_stat) {
         warn "Could not stat '$media_file': $!\n";
